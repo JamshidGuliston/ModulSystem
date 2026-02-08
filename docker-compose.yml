@@ -1,0 +1,34 @@
+services:
+  web:
+    build: .
+    container_name: modulsystem-web
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120"
+    working_dir: /app
+    expose:
+      - "8001"
+    volumes:
+      - ./:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    environment:
+      PYTHONUNBUFFERED: "1"
+      DEBUG: "0"
+      DB_ENGINE: "django.db.backends.postgresql"
+      DB_NAME: "ModulDB"
+      DB_USER: "modul_user"
+      DB_PASSWORD: "modul_pass_2026"
+      DB_HOST: "postgres-shared"
+      DB_PORT: "5432"
+      SECRET_KEY: "django-insecure-modulsystem-secret-key-change-me"
+      ALLOWED_HOSTS: "modul.darsishlanma.uz,modulsystem-web,62.169.29.13,localhost,*"
+    networks:
+      - webnet
+    restart: unless-stopped
+
+volumes:
+  static_volume:
+  media_volume:
+
+networks:
+  webnet:
+    external: true
