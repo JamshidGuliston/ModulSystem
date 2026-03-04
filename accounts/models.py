@@ -11,6 +11,8 @@ class Teacher(models.Model):
     avatar = models.CharField(max_length=500, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     settings = models.JSONField(blank=True, null=True)
+    domain = models.CharField(max_length=255, blank=True, null=True, unique=True,
+                              help_text="Teacher saytining domeni, masalan: https://teacher.example.com")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

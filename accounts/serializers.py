@@ -8,7 +8,7 @@ class TeacherSerializer(serializers.ModelSerializer):
         model = Teacher
         fields = [
             'id', 'email', 'full_name', 'avatar', 'bio',
-            'settings', 'is_active', 'created_at', 'updated_at',
+            'settings', 'domain', 'is_active', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -17,7 +17,7 @@ class TeacherCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
         fields = [
-            'id', 'email', 'password', 'full_name', 'avatar', 'bio', 'settings',
+            'id', 'email', 'password', 'full_name', 'avatar', 'bio', 'settings', 'domain',
         ]
         read_only_fields = ['id']
         extra_kwargs = {
