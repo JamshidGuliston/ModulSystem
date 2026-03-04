@@ -38,29 +38,35 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class ModuleContentSerializer(serializers.ModelSerializer):
-    content_type_name = serializers.CharField(source='content_type.name', read_only=True)
-
     class Meta:
         model = ModuleContent
         fields = [
-            'id', 'module', 'content_type', 'content_type_name',
+            'id', 'module', 'content_type',
             'title', 'content', 'file_url', 'video_url',
             'order_index', 'created_at',
         ]
         read_only_fields = ['id', 'created_at']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['content_type'] = ContentTypeSerializer(instance.content_type).data
+        return data
 
 
 class LessonContentSerializer(serializers.ModelSerializer):
-    content_type_name = serializers.CharField(source='content_type.name', read_only=True)
-
     class Meta:
         model = LessonContent
         fields = [
-            'id', 'lesson', 'content_type', 'content_type_name',
+            'id', 'lesson', 'content_type',
             'title', 'content', 'file_url', 'video_url',
             'order_index', 'created_at',
         ]
         read_only_fields = ['id', 'created_at']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['content_type'] = ContentTypeSerializer(instance.content_type).data
+        return data
 
 
 class ModuleDetailSerializer(serializers.ModelSerializer):

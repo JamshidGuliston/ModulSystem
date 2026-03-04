@@ -32,35 +32,39 @@ class QuestionStudentSerializer(serializers.ModelSerializer):
 
 
 class AssignmentSerializer(serializers.ModelSerializer):
-    assignment_type_name = serializers.CharField(
-        source='assignment_type.name', read_only=True,
-    )
     questions_count = serializers.IntegerField(source='questions.count', read_only=True)
 
     class Meta:
         model = Assignment
         fields = [
-            'id', 'lesson', 'assignment_type', 'assignment_type_name',
+            'id', 'lesson', 'assignment_type',
             'title', 'description', 'total_points', 'time_limit',
             'attempts_allowed', 'order_index', 'is_published',
             'questions_count', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['assignment_type'] = AssignmentTypeSerializer(instance.assignment_type).data
+        return data
+
 
 class AssignmentDetailSerializer(serializers.ModelSerializer):
     """Topshiriq bilan birga savollarni qaytaradi"""
-    assignment_type_name = serializers.CharField(
-        source='assignment_type.name', read_only=True,
-    )
     questions = QuestionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Assignment
         fields = [
-            'id', 'lesson', 'assignment_type', 'assignment_type_name',
+            'id', 'lesson', 'assignment_type',
             'title', 'description', 'total_points', 'time_limit',
             'attempts_allowed', 'order_index', 'is_published',
             'questions', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['assignment_type'] = AssignmentTypeSerializer(instance.assignment_type).data
+        return data
