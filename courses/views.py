@@ -27,6 +27,9 @@ class ModuleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Token orqali kelgan teacher faqat o'z modullarini ko'radi
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(teacher=self.request.teacher)
         teacher_id = self.request.query_params.get('teacher_id')
         if teacher_id:
             qs = qs.filter(teacher_id=teacher_id)
@@ -43,6 +46,9 @@ class LessonViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Teacher faqat o'z modullaridagi darslarni ko'radi
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(module__teacher=self.request.teacher)
         module_id = self.request.query_params.get('module_id')
         if module_id:
             qs = qs.filter(module_id=module_id)
@@ -55,6 +61,8 @@ class ModuleContentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(module__teacher=self.request.teacher)
         module_id = self.request.query_params.get('module_id')
         if module_id:
             qs = qs.filter(module_id=module_id)
@@ -67,6 +75,8 @@ class LessonContentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(lesson__module__teacher=self.request.teacher)
         lesson_id = self.request.query_params.get('lesson_id')
         if lesson_id:
             qs = qs.filter(lesson_id=lesson_id)

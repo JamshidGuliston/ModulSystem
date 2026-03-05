@@ -21,6 +21,9 @@ class StudentModuleEnrollmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # Teacher faqat o'z studentlarining enrollment larini ko'radi
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(student__teacher=self.request.teacher)
         student_id = self.request.query_params.get('student_id')
         module_id = self.request.query_params.get('module_id')
         if student_id:
@@ -36,6 +39,8 @@ class StudentLessonProgressViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(student__teacher=self.request.teacher)
         student_id = self.request.query_params.get('student_id')
         lesson_id = self.request.query_params.get('lesson_id')
         if student_id:
@@ -55,6 +60,8 @@ class AssignmentAttemptViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(student__teacher=self.request.teacher)
         student_id = self.request.query_params.get('student_id')
         assignment_id = self.request.query_params.get('assignment_id')
         if student_id:
@@ -70,6 +77,8 @@ class QuestionAnswerViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(attempt__student__teacher=self.request.teacher)
         attempt_id = self.request.query_params.get('attempt_id')
         if attempt_id:
             qs = qs.filter(attempt_id=attempt_id)

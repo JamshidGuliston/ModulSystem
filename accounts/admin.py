@@ -12,14 +12,23 @@ class StudentInline(admin.TabularInline):
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ['full_name', 'email', 'is_active', 'created_at']
+    list_display = ['full_name', 'email', 'domain', 'is_active', 'created_at']
     list_filter = ['is_active', 'created_at']
-    search_fields = ['full_name', 'email']
-    readonly_fields = ['id', 'created_at', 'updated_at']
+    search_fields = ['full_name', 'email', 'domain']
+    readonly_fields = ['id', 'api_token', 'created_at', 'updated_at']
     inlines = [StudentInline]
     fieldsets = (
         (None, {
             'fields': ('id', 'email', 'password', 'full_name'),
+        }),
+        ("Domain va API Token", {
+            'fields': ('domain', 'api_token'),
+            'description': (
+                "Domain: Teacher frontendining to'liq URL manzili (masalan: https://teacher.example.com). "
+                "CORS tekshiruvida foydalaniladi.<br>"
+                "API Token: Frontend bu tokenni <code>Authorization: Token &lt;token&gt;</code> "
+                "headerida yuborishi kerak."
+            ),
         }),
         ("Qo'shimcha", {
             'fields': ('avatar', 'bio', 'settings'),

@@ -103,6 +103,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://cj56359-joomla-y83g4.tw1.ru',
     'https://modul.darsishlanma.uz',
 ]
+# .env dan qo'shimcha CSRF domen qo'shish
+_extra_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _extra_csrf:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _extra_csrf.split(',') if o.strip()]
 
 ROOT_URLCONF = 'config.urls'
 
@@ -196,6 +200,12 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.authentication.TeacherTokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'accounts.permissions.IsAuthenticatedTeacher',
     ],
 }
 

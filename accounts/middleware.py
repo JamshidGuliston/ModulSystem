@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.cache import cache
+from django.http import JsonResponse
 
 
 CACHE_KEY = 'teacher_allowed_domains'
@@ -23,6 +24,24 @@ def _get_allowed_origins():
 def invalidate_domain_cache():
     """Teacher saqlanganda cache'ni tozalash uchun chaqiriladi."""
     cache.delete(CACHE_KEY)
+
+
+# Token tekshiruvidan mustasno bo'lgan URL patternlar
+# Login, register va admin sahifalari ochiq qoladi
+PUBLIC_PATHS = [
+    '/api/teachers/login/',
+    '/api/students/login/',
+    '/api/teachers/register/',
+    '/admin/',
+]
+
+
+def _is_public_path(path):
+    """Berilgan path ochiq (token talab qilinmaydigan) ekanligini tekshiradi."""
+    for public_path in PUBLIC_PATHS:
+        if path.startswith(public_path):
+            return True
+    return False
 
 
 class DynamicCORSMiddleware:
@@ -50,19 +69,49 @@ class DynamicCORSMiddleware:
 
     def __call__(self, request):
         origin = request.META.get('HTTP_ORIGIN', '')
+        path = request.path
 
-        if origin and self._is_allowed(origin):
-            if request.method == 'OPTIONS':
-                response = self._preflight_response(origin)
+        # Admin panel va statik fayllar uchun CORS tekshiruvi shart emas
+        if path.startswith('/admin/') or path.startswith('/static/'):
+            return self.get_response(request)
+
+        # CORS tekshiruvi — API so'rovlari uchun
+        if origin:
+            if self._is_allowed(origin):
+                # Preflight OPTIONS so'rovi
+                if request.method == 'OPTIONS':
+                    return self._preflight_response(origin)
+
+                response = self.get_response(request)
+                self._add_cors_headers(response, origin)
                 return response
-            response = self.get_response(request)
-            self._add_cors_headers(response, origin)
-            return response
+            else:
+                # Ruxsat yo'q — CORS xatosi
+                if request.method == 'OPTIONS':
+                    response = JsonResponse(
+                        {'detail': "Bu domendan so'rov yuborishga ruxsat yo'q."},
+                        status=403
+                    )
+                    return response
+                response = self.get_response(request)
+                return response
+
+        # Origin yo'q (brauzer emas, curl, postman va h.k.)
+        # DEBUG=True bo'lganda ruxsat berish (development uchun)
+        if settings.DEBUG:
+            return self.get_response(request)
+
+        # Productionda origin bo'lmasa va API so'rovi bo'lsa — rad etish
+        if path.startswith('/api/') and not _is_public_path(path):
+            return JsonResponse(
+                {'detail': "Origin headeri talab qilinadi."},
+                status=403
+            )
 
         return self.get_response(request)
 
     def _is_allowed(self, origin):
-        # 1. settings.py dagi statik list
+        # 1. settings.py dagi statik list (development uchun)
         static_origins = getattr(settings, 'CORS_ALLOWED_ORIGINS', [])
         if origin in static_origins:
             return True

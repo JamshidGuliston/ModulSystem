@@ -1,6 +1,12 @@
+import secrets
 import uuid
 
 from django.db import models
+
+
+def generate_api_token():
+    """64 belgili xavfsiz API token yaratadi."""
+    return secrets.token_hex(32)
 
 
 class Teacher(models.Model):
@@ -13,6 +19,10 @@ class Teacher(models.Model):
     settings = models.JSONField(blank=True, null=True)
     domain = models.CharField(max_length=255, blank=True, null=True, unique=True,
                               help_text="Teacher saytining domeni, masalan: https://teacher.example.com")
+    api_token = models.CharField(
+        max_length=64, unique=True, default=generate_api_token,
+        help_text="API ga kirish uchun token. Frontend bu tokenni Authorization headerda yuboradi."
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -23,6 +33,12 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.full_name
+
+    def regenerate_token(self):
+        """Tokenni qayta yaratadi va saqlaydi."""
+        self.api_token = generate_api_token()
+        self.save(update_fields=['api_token'])
+        return self.api_token
 
 
 class Student(models.Model):
