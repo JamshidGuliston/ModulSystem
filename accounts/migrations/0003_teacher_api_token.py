@@ -2,7 +2,13 @@
 
 import accounts.models
 from django.db import migrations, models
+import secrets
 
+def generate_unique_tokens(apps, schema_editor):
+    Teacher = apps.get_model('accounts', 'Teacher')
+    for teacher in Teacher.objects.all():
+        teacher.api_token = secrets.token_hex(32)
+        teacher.save(update_fields=['api_token'])
 
 class Migration(migrations.Migration):
 
@@ -11,7 +17,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # 1. Dastlab api_token ustunini unique bo'lmagan holda va null ruxsat etilgan qilib qo'shamiz
         migrations.AddField(
+            model_name='teacher',
+            name='api_token',
+            field=models.CharField(default=accounts.models.generate_api_token, help_text='API ga kirish uchun token. Frontend bu tokenni Authorization headerda yuboradi.', max_length=64, null=True),
+        ),
+        # 2. Mavjud Teacherlar uchun unikal token generatsiya qilamiz
+        migrations.RunPython(generate_unique_tokens, reverse_code=migrations.RunPython.noop),
+        # 3. Endi unique constraint ni yoqamiz
+        migrations.AlterField(
             model_name='teacher',
             name='api_token',
             field=models.CharField(default=accounts.models.generate_api_token, help_text='API ga kirish uchun token. Frontend bu tokenni Authorization headerda yuboradi.', max_length=64, unique=True),
