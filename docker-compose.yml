@@ -1,22 +1,4 @@
 services:
-  db:
-    image: postgres:17-alpine
-    container_name: modulsystem-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-moduldb}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-1805}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - webnet
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-moduldb}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   web:
     build: .
     container_name: modulsystem-web
@@ -27,25 +9,21 @@ services:
         gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120
       "
     working_dir: /app
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     env_file:
       - .env
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - webnet
     restart: unless-stopped
 
 volumes:
-  postgres_data:
   static_volume:
   media_volume:
 
 networks:
   webnet:
-    driver: bridge
+    external: true
