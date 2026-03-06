@@ -15,6 +15,12 @@ from .serializers import (
 class TeacherViewSet(viewsets.ModelViewSet):
     queryset = Teacher.objects.all()
 
+    def get_queryset(self):
+        # Teacher faqat o'zining ma'lumotlarini ko'ra oladi
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            return Teacher.objects.filter(pk=self.request.teacher.pk)
+        return Teacher.objects.none()
+
     def get_serializer_class(self):
         if self.action == 'create':
             return TeacherCreateSerializer

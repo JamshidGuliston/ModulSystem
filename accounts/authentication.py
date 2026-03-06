@@ -14,12 +14,12 @@ class TeacherTokenAuthentication(BaseAuthentication):
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
 
         if not auth_header:
-            return None
+            raise AuthenticationFailed("Token talab qilinadi. 'Authorization: Token <token>' headerini yuboring.")
 
         parts = auth_header.split()
 
         if len(parts) != 2 or parts[0] != self.keyword:
-            return None
+            raise AuthenticationFailed("Token formati noto'g'ri. Format: 'Authorization: Token <token>'.")
 
         token = parts[1]
 
@@ -35,3 +35,7 @@ class TeacherTokenAuthentication(BaseAuthentication):
         # DRF (request.user, request.auth) formatida qaytarish
         # user=None chunki biz Django User ishlatmaymiz
         return (teacher, token)
+
+    def authenticate_header(self, request):
+        """401 response uchun WWW-Authenticate headeri."""
+        return self.keyword
