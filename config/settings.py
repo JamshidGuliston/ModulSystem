@@ -103,6 +103,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://cj56359-joomla-y83g4.tw1.ru',
     'https://modul.darsishlanma.uz',
 ]
+# .env dan qo'shimcha CSRF domen qo'shish
+_extra_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _extra_csrf:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _extra_csrf.split(',') if o.strip()]
 
 ROOT_URLCONF = 'config.urls'
 
@@ -197,6 +201,12 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.authentication.TeacherTokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'accounts.permissions.IsAuthenticatedTeacher',
+    ],
 }
 
 # Jazzmin
@@ -271,3 +281,9 @@ JAZZMIN_UI_TWEAKS = {
         'success': 'btn-success',
     },
 }
+
+# Security settings (.env dan o'qiladi)
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
+
