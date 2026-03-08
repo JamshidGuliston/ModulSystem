@@ -53,11 +53,11 @@ class LessonViewSet(viewsets.ModelViewSet):
         if module_id:
             qs = qs.filter(module_id=module_id)
 
-        parent_id = params.get('parent_id')
+        parent_id = self.request.query_params.get('parent_id')
         if parent_id:
             # Berilgan lesson ning child larini (stage larini) qaytaradi
             qs = qs.filter(parent_id=parent_id)
-        elif params.get('root') == 'true':
+        elif self.request.query_params.get('root') == 'true':
             # Faqat root lessonlarni qaytaradi (parent=None)
             qs = qs.filter(parent__isnull=True)
 
