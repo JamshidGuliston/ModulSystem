@@ -5,7 +5,7 @@ from .models import AssignmentType, Assignment, Question
 
 @admin.register(AssignmentType)
 class AssignmentTypeAdmin(admin.ModelAdmin):
-    list_display = ['name', 'is_auto_graded', 'description']
+    list_display = ['name', 'grader_type', 'description']
     search_fields = ['name']
 
 

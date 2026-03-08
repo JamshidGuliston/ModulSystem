@@ -39,7 +39,7 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
         model = QuestionAnswer
         fields = [
             'id', 'attempt', 'question', 'answer_data',
-            'is_correct', 'points_earned', 'feedback', 'answered_at',
+            'is_correct', 'points_earned', 'score_breakdown', 'feedback', 'answered_at',
         ]
         read_only_fields = ['id', 'answered_at']
 

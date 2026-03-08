@@ -34,7 +34,7 @@ class ModuleViewSet(viewsets.ModelViewSet):
 
 
 class LessonViewSet(viewsets.ModelViewSet):
-    queryset = Lesson.objects.select_related('module').prefetch_related('assignments').all()
+    queryset = Lesson.objects.select_related('module', 'parent').prefetch_related('children', 'assignments').all()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -43,9 +43,20 @@ class LessonViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        module_id = self.request.query_params.get('module_id')
+        params = self.request.query_params
+
+        module_id = params.get('module_id')
         if module_id:
             qs = qs.filter(module_id=module_id)
+
+        parent_id = params.get('parent_id')
+        if parent_id:
+            # Berilgan lesson ning child larini (stage larini) qaytaradi
+            qs = qs.filter(parent_id=parent_id)
+        elif params.get('root') == 'true':
+            # Faqat root lessonlarni qaytaradi (parent=None)
+            qs = qs.filter(parent__isnull=True)
+
         return qs
 
 

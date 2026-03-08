@@ -47,6 +47,15 @@ class Lesson(models.Model):
         Module,
         on_delete=models.CASCADE,
         related_name='lessons',
+        null=True,
+        blank=True,
+    )
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        related_name='children',
+        null=True,
+        blank=True,
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)

@@ -5,6 +5,16 @@ from django.db import models
 
 class AssignmentType(models.Model):
     """Topshiriq turi: multiple_choice, text_answer, matching, fill_blank, ordering, true_false, etc."""
+
+    GRADER_TYPES = [
+        ('auto',    'Avtomatik'),     # MCQ, matching, true_false
+        ('ai',      'AI'),            # essay, short_answer, swot
+        ('teacher', "O'qituvchi"),    # file_upload, goal_setting
+        ('peer',    'Peer'),          # peer_assessment
+        ('self',    "O'zi"),          # self_evaluation
+        ('none',    'Baholanmaydi'),  # video_watch, reading
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, blank=True, null=True)
@@ -13,7 +23,11 @@ class AssignmentType(models.Model):
         null=True,
         help_text='Topshiriq turi uchun sozlamalar sxemasi',
     )
-    is_auto_graded = models.BooleanField(default=True)
+    grader_type = models.CharField(
+        max_length=20,
+        choices=GRADER_TYPES,
+        default='auto',
+    )
 
     class Meta:
         db_table = 'assignment_type'
@@ -61,7 +75,7 @@ class Question(models.Model):
     )
     question_text = models.TextField()
     question_data = models.JSONField(help_text='Variantlar, juftliklar va h.k.')
-    correct_answer = models.JSONField(help_text="To'g'ri javob(lar)")
+    correct_answer = models.JSONField(blank=True, null=True, help_text="To'g'ri javob(lar). AI/teacher grader uchun null bo'lishi mumkin")
     points = models.IntegerField(default=1)
     order_index = models.IntegerField(default=0)
     explanation = models.TextField(blank=True, null=True, help_text='Javobdan keyin tushuntirish')

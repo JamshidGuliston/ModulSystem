@@ -26,11 +26,32 @@ class ModuleSerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
     assignments_count = serializers.IntegerField(source='assignments.count', read_only=True)
+    children_count = serializers.IntegerField(source='children.count', read_only=True)
+    has_children = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
         fields = [
-            'id', 'module', 'title', 'description', 'order_index',
+            'id', 'module', 'parent',
+            'title', 'description', 'order_index',
+            'is_sequential', 'required_completion_percent', 'is_published',
+            'assignments_count', 'children_count', 'has_children',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_has_children(self, obj):
+        return obj.children.exists()
+
+
+class LessonChildSerializer(serializers.ModelSerializer):
+    """Stage (child lesson) uchun — assignments bilan"""
+    assignments_count = serializers.IntegerField(source='assignments.count', read_only=True)
+
+    class Meta:
+        model = Lesson
+        fields = [
+            'id', 'parent', 'title', 'description', 'order_index',
             'is_sequential', 'required_completion_percent', 'is_published',
             'assignments_count', 'created_at', 'updated_at',
         ]
@@ -86,14 +107,16 @@ class ModuleDetailSerializer(serializers.ModelSerializer):
 
 
 class LessonDetailSerializer(serializers.ModelSerializer):
-    """Dars bilan birga kontentlar va topshiriqlarni qaytaradi"""
+    """Dars bilan birga kontentlar, child lessonlar (stages) va topshiriqlarni qaytaradi"""
     contents = LessonContentSerializer(many=True, read_only=True)
+    children = LessonChildSerializer(many=True, read_only=True)
 
     class Meta:
         model = Lesson
         fields = [
-            'id', 'module', 'title', 'description', 'order_index',
+            'id', 'module', 'parent',
+            'title', 'description', 'order_index',
             'is_sequential', 'required_completion_percent', 'is_published',
-            'contents', 'created_at', 'updated_at',
+            'contents', 'children', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

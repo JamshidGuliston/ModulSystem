@@ -95,6 +95,7 @@ class QuestionAnswer(models.Model):
     answer_data = models.JSONField(help_text='Talaba javobi')
     is_correct = models.BooleanField(blank=True, null=True)
     points_earned = models.IntegerField(default=0)
+    score_breakdown = models.JSONField(blank=True, null=True, help_text='Essay uchun mezonlar bo\'yicha ball: {"content": 8, "vocabulary": 4}')
     feedback = models.TextField(blank=True, null=True)
     answered_at = models.DateTimeField(auto_now_add=True)
 

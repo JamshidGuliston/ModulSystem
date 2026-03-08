@@ -6,7 +6,7 @@ from .models import AssignmentType, Assignment, Question
 class AssignmentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignmentType
-        fields = ['id', 'name', 'description', 'config_schema', 'is_auto_graded']
+        fields = ['id', 'name', 'description', 'config_schema', 'grader_type']
         read_only_fields = ['id']
 
 
