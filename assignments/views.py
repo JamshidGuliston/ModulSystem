@@ -3,23 +3,51 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from .models import AssignmentType, Assignment, Question
+from .models import AssignmentType, Assignment, AssignmentPart, Question
 from .serializers import (
     AssignmentTypeSerializer,
     AssignmentSerializer,
     AssignmentDetailSerializer,
+    AssignmentPartSerializer,
+    AssignmentPartDetailSerializer,
     QuestionSerializer,
 )
 from .docx_parser import parse_docx
 
 
 class AssignmentTypeViewSet(viewsets.ModelViewSet):
-    queryset = AssignmentType.objects.all()
     serializer_class = AssignmentTypeSerializer
+
+    def get_queryset(self):
+        # Teacher o'ziga tegishli + global (teacher=null) type larni ko'radi
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            from django.db.models import Q
+            return AssignmentType.objects.filter(
+                Q(teacher=self.request.teacher) | Q(teacher__isnull=True)
+            ).select_related('teacher')
+        return AssignmentType.objects.all().select_related('teacher')
+
+
+class AssignmentPartViewSet(viewsets.ModelViewSet):
+    serializer_class = AssignmentPartSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return AssignmentPartDetailSerializer
+        return AssignmentPartSerializer
+
+    def get_queryset(self):
+        qs = AssignmentPart.objects.select_related('assignment', 'assignment_type').all()
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(assignment__lesson__module__teacher=self.request.teacher)
+        assignment_id = self.request.query_params.get('assignment_id')
+        if assignment_id:
+            qs = qs.filter(assignment_id=assignment_id)
+        return qs
 
 
 class AssignmentViewSet(viewsets.ModelViewSet):
-    queryset = Assignment.objects.select_related('assignment_type').prefetch_related('questions').all()
+    queryset = Assignment.objects.select_related('assignment_type').prefetch_related('parts', 'questions').all()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

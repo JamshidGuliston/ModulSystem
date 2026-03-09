@@ -16,12 +16,20 @@ class AssignmentType(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    teacher = models.ForeignKey(
+        'accounts.Teacher',
+        on_delete=models.CASCADE,
+        related_name='assignment_types',
+        null=True,
+        blank=True,
+        help_text="Bo'sh (null) bo'lsa — barcha o'qituvchilar uchun umumiy",
+    )
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255, blank=True, null=True)
     config_schema = models.JSONField(
         blank=True,
         null=True,
-        help_text='Topshiriq turi uchun sozlamalar sxemasi',
+        help_text='Topshiriq turi uchun sozlamalar sxemasi (JSON)',
     )
     grader_type = models.CharField(
         max_length=20,
@@ -33,7 +41,8 @@ class AssignmentType(models.Model):
         db_table = 'assignment_type'
 
     def __str__(self):
-        return self.name
+        teacher_label = f' [{self.teacher.full_name}]' if self.teacher else ' [Global]'
+        return f'{self.name}{teacher_label}'
 
 
 class Assignment(models.Model):
@@ -66,12 +75,48 @@ class Assignment(models.Model):
         return self.title
 
 
+class AssignmentPart(models.Model):
+    """Assignment ichidagi qism (Part 1: Listening, Part 2: Reading, ...)"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    assignment = models.ForeignKey(
+        Assignment,
+        on_delete=models.CASCADE,
+        related_name='parts',
+    )
+    title = models.CharField(max_length=200)
+    instructions = models.TextField(blank=True, null=True)
+    order_index = models.IntegerField(default=0)
+    assignment_type = models.ForeignKey(
+        AssignmentType,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='parts',
+        help_text="Part uchun alohida topshiriq turi (bo'sh bo'lsa — assignment turidan foydalaniladi)",
+    )
+
+    class Meta:
+        db_table = 'assignment_part'
+        ordering = ['order_index']
+
+    def __str__(self):
+        return f'{self.assignment.title} — {self.title}'
+
+
 class Question(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     assignment = models.ForeignKey(
         Assignment,
         on_delete=models.CASCADE,
         related_name='questions',
+    )
+    part = models.ForeignKey(
+        AssignmentPart,
+        on_delete=models.CASCADE,
+        related_name='questions',
+        null=True,
+        blank=True,
+        help_text="Qaysi partga tegishli (bo'sh bo'lsa — partlarsiz assignment)",
     )
     question_text = models.TextField()
     question_data = models.JSONField(help_text='Variantlar, juftliklar va h.k.')
