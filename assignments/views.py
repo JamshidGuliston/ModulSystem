@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from .models import AssignmentType, Assignment, AssignmentPart, Question
+from .models import AssignmentType, Assignment, AssignmentPart, Question, DiscussionMessage
 from .serializers import (
     AssignmentTypeSerializer,
     AssignmentSerializer,
@@ -11,6 +11,7 @@ from .serializers import (
     AssignmentPartSerializer,
     AssignmentPartDetailSerializer,
     QuestionSerializer,
+    DiscussionMessageSerializer,
 )
 from .docx_parser import parse_docx
 
@@ -19,11 +20,9 @@ class AssignmentTypeViewSet(viewsets.ModelViewSet):
     serializer_class = AssignmentTypeSerializer
 
     def get_queryset(self):
-        # Teacher o'ziga tegishli + global (teacher=null) type larni ko'radi
         if hasattr(self.request, 'teacher') and self.request.teacher:
-            from django.db.models import Q
             return AssignmentType.objects.filter(
-                Q(teacher=self.request.teacher) | Q(teacher__isnull=True)
+                teacher=self.request.teacher
             ).select_related('teacher')
         return AssignmentType.objects.all().select_related('teacher')
 
@@ -76,6 +75,28 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_id = self.request.query_params.get('assignment_id')
         if assignment_id:
             qs = qs.filter(assignment_id=assignment_id)
+        return qs
+
+
+class DiscussionMessageViewSet(viewsets.ModelViewSet):
+    """
+    GET  /api/discussion-messages/?question_id=<uuid>  — xabarlar ro'yxati
+    POST /api/discussion-messages/                      — xabar yuborish
+    """
+    serializer_class = DiscussionMessageSerializer
+    http_method_names = ['get', 'post', 'delete']
+
+    def get_queryset(self):
+        qs = DiscussionMessage.objects.select_related('student').all()
+        # Teacher scope: faqat o'z studentlarining xabarlarini ko'radi
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(question__assignment__lesson__module__teacher=self.request.teacher)
+        question_id = self.request.query_params.get('question_id')
+        if question_id:
+            qs = qs.filter(question_id=question_id)
+        student_id = self.request.query_params.get('student_id')
+        if student_id:
+            qs = qs.filter(student_id=student_id)
         return qs
 
 

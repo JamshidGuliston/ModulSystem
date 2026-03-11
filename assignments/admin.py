@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
 
-from .models import AssignmentType, Assignment, AssignmentPart, Question
+from .models import AssignmentType, Assignment, AssignmentPart, Question, DiscussionMessage
 
 CONFIG_SCHEMA_EXAMPLES = """
 <style>
@@ -155,3 +155,17 @@ class QuestionAdmin(admin.ModelAdmin):
     @admin.display(description='Savol matni')
     def short_text(self, obj):
         return obj.question_text[:80] + '...' if len(obj.question_text) > 80 else obj.question_text
+
+
+@admin.register(DiscussionMessage)
+class DiscussionMessageAdmin(admin.ModelAdmin):
+    list_display = ['short_message', 'sender_type', 'student', 'question', 'created_at']
+    list_filter = ['sender_type', 'created_at', 'question__assignment__lesson__module']
+    search_fields = ['message', 'student__full_name']
+    readonly_fields = ['id', 'created_at']
+    list_select_related = ['student', 'question']
+    ordering = ['-created_at']
+
+    @admin.display(description='Xabar')
+    def short_message(self, obj):
+        return obj.message[:60] + '...' if len(obj.message) > 60 else obj.message

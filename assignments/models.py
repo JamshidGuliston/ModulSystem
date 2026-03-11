@@ -131,3 +131,34 @@ class Question(models.Model):
 
     def __str__(self):
         return f"Savol #{self.order_index} - {self.assignment.title}"
+
+
+class DiscussionMessage(models.Model):
+    """Discussion/chat topshirig'idagi xabarlar."""
+
+    SENDER_TYPES = [
+        ('student', 'Student'),
+        ('teacher', "O'qituvchi"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name='discussion_messages',
+    )
+    student = models.ForeignKey(
+        'accounts.Student',
+        on_delete=models.CASCADE,
+        related_name='discussion_messages',
+    )
+    sender_type = models.CharField(max_length=10, choices=SENDER_TYPES, default='student')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'discussion_message'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.sender_type} | {self.student.full_name} | {self.created_at:%Y-%m-%d %H:%M}"

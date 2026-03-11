@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AssignmentType, Assignment, AssignmentPart, Question
+from .models import AssignmentType, Assignment, AssignmentPart, Question, DiscussionMessage
 
 
 class AssignmentTypeSerializer(serializers.ModelSerializer):
@@ -109,3 +109,16 @@ class AssignmentDetailSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['assignment_type'] = AssignmentTypeSerializer(instance.assignment_type).data
         return data
+
+
+class DiscussionMessageSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.full_name', read_only=True)
+    student_avatar = serializers.CharField(source='student.avatar', read_only=True)
+
+    class Meta:
+        model = DiscussionMessage
+        fields = [
+            'id', 'question', 'student', 'student_name', 'student_avatar',
+            'sender_type', 'message', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'student_name', 'student_avatar']

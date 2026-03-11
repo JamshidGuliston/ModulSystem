@@ -6,6 +6,7 @@ from .views import (
     AssignmentViewSet,
     AssignmentPartViewSet,
     QuestionViewSet,
+    DiscussionMessageViewSet,
     import_questions_from_docx,
 )
 
@@ -14,6 +15,7 @@ router.register(r'assignment-types', AssignmentTypeViewSet, basename='assignment
 router.register(r'assignments', AssignmentViewSet)
 router.register(r'assignment-parts', AssignmentPartViewSet, basename='assignmentpart')
 router.register(r'questions', QuestionViewSet)
+router.register(r'discussion-messages', DiscussionMessageViewSet, basename='discussionmessage')
 
 urlpatterns = [
     path('', include(router.urls)),
