@@ -1,4 +1,11 @@
+import os
+import uuid as uuid_lib
+
+from django.conf import settings
 from rest_framework import viewsets
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser
+from rest_framework.response import Response
 
 from .models import ContentType, Module, Lesson, ModuleContent, LessonContent
 from .serializers import (
@@ -10,6 +17,27 @@ from .serializers import (
     ModuleContentSerializer,
     LessonContentSerializer,
 )
+
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser])
+def upload_file(request):
+    file = request.FILES.get('file')
+    if not file:
+        return Response({'error': 'Fayl yuklanmadi'}, status=400)
+
+    ext = os.path.splitext(file.name)[1].lower()
+    filename = f"{uuid_lib.uuid4()}{ext}"
+    upload_dir = settings.MEDIA_ROOT / 'uploads'
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    file_path = upload_dir / filename
+    with open(file_path, 'wb') as f:
+        for chunk in file.chunks():
+            f.write(chunk)
+
+    url = request.build_absolute_uri(f"{settings.MEDIA_URL}uploads/{filename}")
+    return Response({'url': url, 'name': file.name, 'size': file.size})
 
 
 class ContentTypeViewSet(viewsets.ModelViewSet):

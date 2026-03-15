@@ -7,6 +7,7 @@ from .views import (
     LessonViewSet,
     ModuleContentViewSet,
     LessonContentViewSet,
+    upload_file,
 )
 
 router = DefaultRouter()
@@ -18,4 +19,5 @@ router.register(r'lesson-contents', LessonContentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('upload/', upload_file),
 ]
