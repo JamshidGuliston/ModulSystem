@@ -222,12 +222,25 @@ class QuestionAnswerViewSet(viewsets.ModelViewSet):
                 'question__assignment__assignment_type'
             ).get(attempt_id=attempt_id, question_id=question_id)
             existing.answer_data = answer_data
-            existing.save(update_fields=['answer_data'])
-            is_correct, points_earned = _auto_grade(existing.question, answer_data)
-            if is_correct is not None:
-                existing.is_correct = is_correct
-                existing.points_earned = points_earned
-                existing.save(update_fields=['is_correct', 'points_earned'])
+            fields_to_update = ['answer_data']
+
+            # AI grading fields — only update when explicitly sent
+            ai_fields = ['is_correct', 'points_earned', 'feedback', 'score_breakdown']
+            ai_data_provided = any(f in request.data for f in ai_fields)
+            if ai_data_provided:
+                for field in ai_fields:
+                    if field in request.data:
+                        setattr(existing, field, request.data[field])
+                        fields_to_update.append(field)
+            else:
+                # Auto-grade only when AI hasn't already graded
+                is_correct, points_earned = _auto_grade(existing.question, answer_data)
+                if is_correct is not None:
+                    existing.is_correct = is_correct
+                    existing.points_earned = points_earned
+                    fields_to_update += ['is_correct', 'points_earned']
+
+            existing.save(update_fields=fields_to_update)
             return Response(self.get_serializer(existing).data, status=status.HTTP_200_OK)
         except QuestionAnswer.DoesNotExist:
             pass
