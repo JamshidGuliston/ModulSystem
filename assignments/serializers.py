@@ -67,6 +67,7 @@ class QuestionStudentSerializer(serializers.ModelSerializer):
 
 class AssignmentSerializer(serializers.ModelSerializer):
     questions_count = serializers.IntegerField(source='questions.count', read_only=True)
+    questions_max_score = serializers.SerializerMethodField()
 
     class Meta:
         model = Assignment
@@ -74,9 +75,16 @@ class AssignmentSerializer(serializers.ModelSerializer):
             'id', 'lesson', 'assignment_type',
             'title', 'description', 'total_points', 'time_limit',
             'attempts_allowed', 'order_index', 'is_published',
-            'questions_count', 'created_at', 'updated_at',
+            'questions_count', 'questions_max_score', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_questions_max_score(self, obj):
+        """Barcha savollar ballarini yig'ib qaytaradi (parts + direct questions)"""
+        from django.db.models import Sum
+        parts_sum = obj.parts.aggregate(s=Sum('questions__points'))['s'] or 0
+        direct_sum = obj.questions.filter(part__isnull=True).aggregate(s=Sum('points'))['s'] or 0
+        return parts_sum + direct_sum
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

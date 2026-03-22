@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Proekt/Angular/TeacherModuls/NilufarModul/app/src/app/core/services/**)",
+      "Read(//d/Proekt/Angular/TeacherModuls/NilufarModul/app/src/app/teacher/students/**)",
+      "Read(//d/Proekt/Angular/TeacherModuls/NilufarModul/app/src/app/core//**)",
+      "Read(//d/Proekt/Angular/TeacherModuls/NilufarModul/app/src/app/teacher/**)"
+    ]
+  }
+}
