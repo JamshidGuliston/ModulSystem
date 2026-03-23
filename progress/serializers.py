@@ -47,15 +47,24 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
 class AssignmentAttemptSerializer(serializers.ModelSerializer):
     student_name = serializers.CharField(source='student.full_name', read_only=True)
     assignment_title = serializers.CharField(source='assignment.title', read_only=True)
+    lesson_id = serializers.UUIDField(source='assignment.lesson_id', read_only=True)
+    assignment_questions_max = serializers.SerializerMethodField()
 
     class Meta:
         model = AssignmentAttempt
         fields = [
             'id', 'student', 'student_name', 'assignment', 'assignment_title',
+            'lesson_id', 'assignment_questions_max',
             'attempt_number', 'started_at', 'submitted_at',
             'score', 'max_score', 'percentage', 'is_passed',
         ]
         read_only_fields = ['id', 'started_at']
+
+    def get_assignment_questions_max(self, obj):
+        from django.db.models import Sum
+        parts_sum = obj.assignment.parts.aggregate(s=Sum('questions__points'))['s'] or 0
+        direct_sum = obj.assignment.questions.filter(part__isnull=True).aggregate(s=Sum('points'))['s'] or 0
+        return parts_sum + direct_sum
 
 
 class AssignmentAttemptDetailSerializer(serializers.ModelSerializer):

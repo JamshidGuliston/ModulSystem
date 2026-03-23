@@ -154,7 +154,9 @@ class StudentLessonProgressViewSet(viewsets.ModelViewSet):
 
 
 class AssignmentAttemptViewSet(viewsets.ModelViewSet):
-    queryset = AssignmentAttempt.objects.select_related('student', 'assignment').all()
+    queryset = AssignmentAttempt.objects.select_related('student', 'assignment').prefetch_related(
+        'assignment__parts__questions', 'assignment__questions'
+    ).all()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
