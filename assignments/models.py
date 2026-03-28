@@ -85,6 +85,14 @@ class AssignmentPart(models.Model):
     )
     title = models.CharField(max_length=200)
     instructions = models.TextField(blank=True, null=True)
+    grading_prompt = models.TextField(
+        blank=True, null=True,
+        help_text="AI ga yuboriladigan baholash mezoni (Speaking uchun)'",
+    )
+    max_score = models.IntegerField(
+        default=5,
+        help_text="Bu part uchun maksimal ball (masalan Part 3 uchun 6)",
+    )
     order_index = models.IntegerField(default=0)
     assignment_type = models.ForeignKey(
         AssignmentType,

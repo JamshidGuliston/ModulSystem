@@ -16,7 +16,7 @@ class AssignmentPartSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignmentPart
         fields = [
-            'id', 'assignment', 'title', 'instructions',
+            'id', 'assignment', 'title', 'instructions', 'grading_prompt', 'max_score',
             'order_index', 'assignment_type', 'questions_count',
         ]
         read_only_fields = ['id']
@@ -30,7 +30,7 @@ class AssignmentPartDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignmentPart
         fields = [
-            'id', 'assignment', 'title', 'instructions',
+            'id', 'assignment', 'title', 'instructions', 'grading_prompt', 'max_score',
             'order_index', 'assignment_type', 'assignment_type_detail', 'questions',
         ]
         read_only_fields = ['id']
