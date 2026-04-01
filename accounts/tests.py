@@ -62,3 +62,63 @@ class LevelAPITest(TestCase):
         }, format='json')
         level.refresh_from_db()
         self.assertEqual(level.teacher, self.teacher)
+
+
+class StudentLevelFieldsTest(TestCase):
+    def setUp(self):
+        self.teacher = make_teacher()
+        self.level = Level.objects.create(teacher=self.teacher, name='B1')
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.teacher.api_token}')
+
+    def test_student_has_level_fields(self):
+        from .models import Student
+        s = Student.objects.create(
+            teacher=self.teacher,
+            email='s@test.com',
+            password='pass',
+            full_name='Student',
+            level=self.level,
+            placement_done=True,
+            initial_score=9,
+            group_number='G-101',
+        )
+        self.assertEqual(s.level, self.level)
+        self.assertTrue(s.placement_done)
+        self.assertEqual(s.initial_score, 9)
+        self.assertEqual(s.group_number, 'G-101')
+
+    def test_student_level_null_by_default(self):
+        from .models import Student
+        s = Student.objects.create(
+            teacher=self.teacher, email='s2@test.com',
+            password='pass', full_name='Student2'
+        )
+        self.assertIsNone(s.level)
+        self.assertFalse(s.placement_done)
+        self.assertIsNone(s.initial_score)
+
+    def test_patch_student_level(self):
+        from .models import Student
+        s = Student.objects.create(
+            teacher=self.teacher, email='s3@test.com',
+            password='pass', full_name='Student3'
+        )
+        resp = self.client.patch(f'/api/students/{s.id}/', {
+            'level': str(self.level.id),
+            'placement_done': True,
+            'initial_score': 7,
+        }, format='json')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data['level']['name'], 'B1')
+        self.assertTrue(resp.data['placement_done'])
+
+    def test_existing_student_without_level_still_works(self):
+        from .models import Student
+        s = Student.objects.create(
+            teacher=self.teacher, email='old@test.com',
+            password='pass', full_name='OldStudent'
+        )
+        resp = self.client.get(f'/api/students/{s.id}/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNone(resp.data['level'])

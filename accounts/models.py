@@ -74,6 +74,16 @@ class Student(models.Model):
     password = models.CharField(max_length=255)
     full_name = models.CharField(max_length=255)
     avatar = models.CharField(max_length=500, blank=True, null=True)
+    level = models.ForeignKey(
+        'Level',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+    )
+    placement_done = models.BooleanField(default=False)
+    initial_score = models.IntegerField(null=True, blank=True)
+    group_number = models.CharField(max_length=50, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

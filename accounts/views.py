@@ -9,6 +9,7 @@ from .serializers import (
     TeacherCreateSerializer,
     StudentSerializer,
     StudentCreateSerializer,
+    StudentUpdateSerializer,
     LevelSerializer,
 )
 
@@ -78,6 +79,8 @@ class StudentViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return StudentCreateSerializer
+        if self.action in ('update', 'partial_update'):
+            return StudentUpdateSerializer
         return StudentSerializer
 
     def get_queryset(self):
@@ -89,6 +92,19 @@ class StudentViewSet(viewsets.ModelViewSet):
         if teacher_id:
             qs = qs.filter(teacher_id=teacher_id)
         return qs
+
+    def _respond_with_student_serializer(self, instance):
+        """update/partial_update dan keyin to'liq nested response qaytaradi."""
+        serializer = StudentSerializer(instance, context=self.get_serializer_context())
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return self._respond_with_student_serializer(instance)
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny],
             authentication_classes=[])

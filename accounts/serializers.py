@@ -53,14 +53,27 @@ class TeacherCreateSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    level = LevelSerializer(read_only=True)
 
     class Meta:
         model = Student
         fields = [
             'id', 'teacher', 'teacher_name', 'email', 'full_name',
-            'avatar', 'is_active', 'created_at', 'updated_at',
+            'avatar', 'is_active',
+            'level', 'placement_done', 'initial_score', 'group_number',
+            'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class StudentUpdateSerializer(serializers.ModelSerializer):
+    """PATCH uchun — level UUID orqali qabul qiladi"""
+    class Meta:
+        model = Student
+        fields = [
+            'email', 'full_name', 'avatar', 'is_active',
+            'level', 'placement_done', 'initial_score', 'group_number',
+        ]
 
 
 class StudentCreateSerializer(serializers.ModelSerializer):
