@@ -74,7 +74,7 @@ class TeacherViewSet(viewsets.ModelViewSet):
 
 
 class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.select_related('teacher').all()
+    queryset = Student.objects.select_related('teacher', 'level').all()
 
     def get_serializer_class(self):
         if self.action == 'create':

@@ -97,6 +97,7 @@ class StudentLevelFieldsTest(TestCase):
         self.assertIsNone(s.level)
         self.assertFalse(s.placement_done)
         self.assertIsNone(s.initial_score)
+        self.assertIsNone(s.group_number)
 
     def test_patch_student_level(self):
         from .models import Student
