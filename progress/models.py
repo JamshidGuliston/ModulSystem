@@ -104,3 +104,29 @@ class QuestionAnswer(models.Model):
 
     def __str__(self):
         return f"Javob - {self.question_id}"
+
+
+class StudentSessionLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    student = models.ForeignKey(
+        'accounts.Student',
+        on_delete=models.CASCADE,
+        related_name='session_logs',
+    )
+    lesson = models.ForeignKey(
+        'courses.Lesson',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='session_logs',
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'student_session_log'
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.started_at:%Y-%m-%d %H:%M}"

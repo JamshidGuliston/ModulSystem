@@ -5,6 +5,7 @@ from .models import (
     StudentLessonProgress,
     AssignmentAttempt,
     QuestionAnswer,
+    StudentSessionLog,
 )
 
 
@@ -65,6 +66,16 @@ class AssignmentAttemptSerializer(serializers.ModelSerializer):
         parts_sum = obj.assignment.parts.aggregate(s=Sum('questions__points'))['s'] or 0
         direct_sum = obj.assignment.questions.filter(part__isnull=True).aggregate(s=Sum('points'))['s'] or 0
         return parts_sum + direct_sum
+
+
+class StudentSessionLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentSessionLog
+        fields = [
+            'id', 'student', 'lesson',
+            'started_at', 'ended_at', 'duration_seconds',
+        ]
+        read_only_fields = ['id', 'started_at']
 
 
 class AssignmentAttemptDetailSerializer(serializers.ModelSerializer):

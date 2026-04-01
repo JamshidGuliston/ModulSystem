@@ -6,6 +6,7 @@ from .views import (
     StudentLessonProgressViewSet,
     AssignmentAttemptViewSet,
     QuestionAnswerViewSet,
+    StudentSessionLogViewSet,
 )
 
 router = DefaultRouter()
@@ -13,6 +14,7 @@ router.register(r'enrollments', StudentModuleEnrollmentViewSet)
 router.register(r'lesson-progress', StudentLessonProgressViewSet)
 router.register(r'attempts', AssignmentAttemptViewSet)
 router.register(r'answers', QuestionAnswerViewSet)
+router.register(r'session-logs', StudentSessionLogViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

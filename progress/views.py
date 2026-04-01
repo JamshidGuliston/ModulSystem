@@ -8,6 +8,7 @@ from .models import (
     StudentLessonProgress,
     AssignmentAttempt,
     QuestionAnswer,
+    StudentSessionLog,
 )
 from .serializers import (
     StudentModuleEnrollmentSerializer,
@@ -15,6 +16,7 @@ from .serializers import (
     AssignmentAttemptSerializer,
     AssignmentAttemptDetailSerializer,
     QuestionAnswerSerializer,
+    StudentSessionLogSerializer,
 )
 
 
@@ -257,3 +259,22 @@ class QuestionAnswerViewSet(viewsets.ModelViewSet):
             instance.is_correct = is_correct
             instance.points_earned = points_earned
             instance.save(update_fields=['is_correct', 'points_earned'])
+
+
+class StudentSessionLogViewSet(viewsets.ModelViewSet):
+    queryset = StudentSessionLog.objects.select_related('student', 'lesson').all()
+    serializer_class = StudentSessionLogSerializer
+    http_method_names = ['get', 'post', 'patch']
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            qs = qs.filter(student__teacher=self.request.teacher)
+        student_id = self.request.query_params.get('student_id')
+        if student_id:
+            qs = qs.filter(student_id=student_id)
+        lesson_id = self.request.query_params.get('lesson_id')
+        if lesson_id:
+            qs = qs.filter(lesson_id=lesson_id)
+        return qs
