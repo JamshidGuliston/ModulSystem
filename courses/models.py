@@ -65,6 +65,18 @@ class Lesson(models.Model):
         default=80,
         help_text="Keyingi darsga o'tish uchun talab qilinadigan foiz",
     )
+    LESSON_TYPES = [
+        ('regular', 'Oddiy dars'),
+        ('jn', 'Joriy Nazorat'),
+        ('on', 'Oraliq Nazorat'),
+        ('placement', 'Daraja aniqlash testi'),
+    ]
+
+    lesson_type = models.CharField(
+        max_length=20,
+        choices=LESSON_TYPES,
+        default='regular',
+    )
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -120,6 +132,13 @@ class LessonContent(models.Model):
     content = models.TextField(blank=True, null=True)
     file_url = models.CharField(max_length=500, blank=True, null=True)
     video_url = models.CharField(max_length=500, blank=True, null=True)
+    level = models.ForeignKey(
+        'accounts.Level',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='lesson_contents',
+    )
     order_index = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

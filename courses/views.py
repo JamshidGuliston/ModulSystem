@@ -107,14 +107,19 @@ class ModuleContentViewSet(viewsets.ModelViewSet):
 
 
 class LessonContentViewSet(viewsets.ModelViewSet):
-    queryset = LessonContent.objects.select_related('content_type').all()
+    queryset = LessonContent.objects.select_related('lesson', 'content_type', 'level').all()
     serializer_class = LessonContentSerializer
+    pagination_class = None
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = LessonContent.objects.select_related('lesson', 'content_type', 'level').all()
         if hasattr(self.request, 'teacher') and self.request.teacher:
             qs = qs.filter(lesson__module__teacher=self.request.teacher)
         lesson_id = self.request.query_params.get('lesson_id')
         if lesson_id:
             qs = qs.filter(lesson_id=lesson_id)
+        level_id = self.request.query_params.get('level_id')
+        if level_id:
+            from django.db.models import Q
+            qs = qs.filter(Q(level_id=level_id) | Q(level__isnull=True))
         return qs
