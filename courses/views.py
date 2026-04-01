@@ -112,7 +112,7 @@ class LessonContentViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        qs = LessonContent.objects.select_related('lesson', 'content_type', 'level').all()
+        qs = super().get_queryset()
         if hasattr(self.request, 'teacher') and self.request.teacher:
             qs = qs.filter(lesson__module__teacher=self.request.teacher)
         lesson_id = self.request.query_params.get('lesson_id')
