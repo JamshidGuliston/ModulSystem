@@ -81,7 +81,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
             from django.db.models import Q
             qs = qs.filter(Q(level_id=level_id) | Q(level__isnull=True))
         randomize = self.request.query_params.get('randomize')
-        if randomize == 'true' and assignment_id:
+        if randomize == 'true':
+            if not assignment_id:
+                return qs.none()
             try:
                 asgn = Assignment.objects.get(pk=assignment_id)
                 if asgn.is_randomized and asgn.question_count:

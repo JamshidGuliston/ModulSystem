@@ -108,10 +108,17 @@ class AssignmentRandomizationTest(TestCase):
         self.assertIsNone(self.assignment.question_count)
 
     def test_assignment_serializer_includes_random_fields(self):
+        # Detail serializer
         resp = self.client.get(f'/api/assignments/{self.assignment.id}/')
         self.assertEqual(resp.status_code, 200)
         self.assertIn('is_randomized', resp.data)
         self.assertIn('question_count', resp.data)
+        # List serializer
+        resp_list = self.client.get(f'/api/assignments/')
+        self.assertEqual(resp_list.status_code, 200)
+        self.assertGreater(len(resp_list.data['results']), 0)
+        self.assertIn('is_randomized', resp_list.data['results'][0])
+        self.assertIn('question_count', resp_list.data['results'][0])
 
     def test_random_questions_endpoint(self):
         self.assignment.is_randomized = True
