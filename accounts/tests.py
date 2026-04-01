@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.test import TestCase
 from rest_framework.test import APIClient
 from .models import Teacher, Level
@@ -19,7 +20,7 @@ class LevelModelTest(TestCase):
     def test_level_unique_per_teacher(self):
         teacher = make_teacher()
         Level.objects.create(teacher=teacher, name='A2')
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             Level.objects.create(teacher=teacher, name='A2')
 
 
@@ -47,3 +48,17 @@ class LevelAPITest(TestCase):
         level = Level.objects.create(teacher=self.teacher, name='A2')
         resp = self.client.delete(f'/api/levels/{level.id}/')
         self.assertEqual(resp.status_code, 204)
+
+    def test_duplicate_level_name_returns_400(self):
+        Level.objects.create(teacher=self.teacher, name='A2')
+        resp = self.client.post('/api/levels/', {'name': 'A2', 'order_index': 0})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_patch_cannot_reassign_teacher(self):
+        other = make_teacher(email='other@test.com')
+        level = Level.objects.create(teacher=self.teacher, name='A2')
+        resp = self.client.patch(f'/api/levels/{level.id}/', {
+            'teacher': str(other.id),
+        }, format='json')
+        level.refresh_from_db()
+        self.assertEqual(level.teacher, self.teacher)
