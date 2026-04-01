@@ -33,6 +33,7 @@ class LevelAPITest(TestCase):
         resp = self.client.post('/api/levels/', {'name': 'A2', 'order_index': 0})
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(resp.data['name'], 'A2')
+        self.assertEqual(Level.objects.get(name='A2').teacher, self.teacher)
 
     def test_list_levels_teacher_scope(self):
         Level.objects.create(teacher=self.teacher, name='A2')

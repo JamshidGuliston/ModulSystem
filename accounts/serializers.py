@@ -7,7 +7,17 @@ class LevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Level
         fields = ['id', 'teacher', 'name', 'description', 'order_index', 'created_at']
-        read_only_fields = ['id', 'teacher', 'created_at']
+        read_only_fields = ['id', 'created_at']
+        extra_kwargs = {
+            'teacher': {'required': False},
+        }
+
+    def get_validators(self):
+        # UniqueTogetherValidator for (teacher, name) requires teacher in the
+        # request body, but teacher is injected by perform_create.  Drop the
+        # auto-generated unique-together validators here; the DB constraint
+        # still enforces uniqueness.
+        return []
 
 
 class TeacherSerializer(serializers.ModelSerializer):
