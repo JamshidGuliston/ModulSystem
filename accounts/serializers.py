@@ -1,6 +1,13 @@
 from rest_framework import serializers
 
-from .models import Teacher, Student
+from .models import Teacher, Student, Level
+
+
+class LevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Level
+        fields = ['id', 'teacher', 'name', 'description', 'order_index', 'created_at']
+        read_only_fields = ['id', 'teacher', 'created_at']
 
 
 class TeacherSerializer(serializers.ModelSerializer):

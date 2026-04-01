@@ -3,12 +3,13 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import Teacher, Student
+from .models import Teacher, Student, Level
 from .serializers import (
     TeacherSerializer,
     TeacherCreateSerializer,
     StudentSerializer,
     StudentCreateSerializer,
+    LevelSerializer,
 )
 
 
@@ -129,3 +130,16 @@ class StudentViewSet(viewsets.ModelViewSet):
         # (frontend bu tokenni keyingi so'rovlarda ishlatadi)
         data['api_token'] = student.teacher.api_token
         return Response(data)
+
+
+class LevelViewSet(viewsets.ModelViewSet):
+    serializer_class = LevelSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            return Level.objects.filter(teacher=self.request.teacher)
+        return Level.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(teacher=self.request.teacher)

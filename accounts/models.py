@@ -41,6 +41,27 @@ class Teacher(models.Model):
         return self.api_token
 
 
+class Level(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.CASCADE,
+        related_name='levels',
+    )
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    order_index = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'level'
+        ordering = ['order_index']
+        unique_together = [('teacher', 'name')]
+
+    def __str__(self):
+        return self.name
+
+
 class Student(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     teacher = models.ForeignKey(

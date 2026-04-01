@@ -101,6 +101,11 @@ class DynamicCORSMiddleware:
         if settings.DEBUG:
             return self.get_response(request)
 
+        # Authorization headeri bilan kelgan so'rovlar (API clients, test)
+        # brauzer bo'lmagan so'rovlar uchun ruxsat berish
+        if request.META.get('HTTP_AUTHORIZATION'):
+            return self.get_response(request)
+
         # Productionda origin bo'lmasa va API so'rovi bo'lsa — rad etish
         if path.startswith('/api/') and not _is_public_path(path):
             return JsonResponse(
