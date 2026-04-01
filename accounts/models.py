@@ -41,6 +41,28 @@ class Teacher(models.Model):
         return self.api_token
 
 
+class Level(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.CASCADE,
+        related_name='levels',
+    )
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    order_index = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'level'
+        ordering = ['order_index']
+        unique_together = [('teacher', 'name')]
+
+    def __str__(self):
+        return self.name
+
+
 class Student(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     teacher = models.ForeignKey(
@@ -52,6 +74,16 @@ class Student(models.Model):
     password = models.CharField(max_length=255)
     full_name = models.CharField(max_length=255)
     avatar = models.CharField(max_length=500, blank=True, null=True)
+    level = models.ForeignKey(
+        'Level',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+    )
+    placement_done = models.BooleanField(default=False)
+    initial_score = models.IntegerField(null=True, blank=True)
+    group_number = models.CharField(max_length=50, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

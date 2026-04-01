@@ -34,7 +34,7 @@ class LessonSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'module', 'parent',
             'title', 'description', 'order_index',
-            'is_sequential', 'required_completion_percent', 'is_published',
+            'is_sequential', 'required_completion_percent', 'lesson_type', 'is_published',
             'assignments_count', 'children_count', 'has_children',
             'created_at', 'updated_at',
         ]
@@ -52,7 +52,7 @@ class LessonChildSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = [
             'id', 'parent', 'title', 'description', 'order_index',
-            'is_sequential', 'required_completion_percent', 'is_published',
+            'is_sequential', 'required_completion_percent', 'lesson_type', 'is_published',
             'assignments_count', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -80,7 +80,7 @@ class LessonContentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'lesson', 'content_type',
             'title', 'content', 'file_url', 'video_url',
-            'order_index', 'created_at',
+            'level', 'order_index', 'created_at',
         ]
         read_only_fields = ['id', 'created_at']
 
@@ -116,7 +116,7 @@ class LessonDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'module', 'parent',
             'title', 'description', 'order_index',
-            'is_sequential', 'required_completion_percent', 'is_published',
+            'is_sequential', 'required_completion_percent', 'lesson_type', 'is_published',
             'contents', 'children', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
