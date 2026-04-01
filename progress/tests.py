@@ -56,6 +56,7 @@ class SessionLogAPITest(TestCase):
         }, format='json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data['duration_seconds'], 1800)
+        self.assertIsNotNone(resp.data['ended_at'])
 
     def test_list_session_logs_by_student(self):
         StudentSessionLog.objects.create(student=self.student)
