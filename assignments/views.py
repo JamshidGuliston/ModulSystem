@@ -65,8 +65,9 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.select_related('assignment').all()
+    queryset = Question.objects.select_related('assignment', 'level').all()
     serializer_class = QuestionSerializer
+    pagination_class = None
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -75,6 +76,21 @@ class QuestionViewSet(viewsets.ModelViewSet):
         assignment_id = self.request.query_params.get('assignment_id')
         if assignment_id:
             qs = qs.filter(assignment_id=assignment_id)
+        level_id = self.request.query_params.get('level_id')
+        if level_id:
+            from django.db.models import Q
+            qs = qs.filter(Q(level_id=level_id) | Q(level__isnull=True))
+        randomize = self.request.query_params.get('randomize')
+        if randomize == 'true' and assignment_id:
+            try:
+                asgn = Assignment.objects.get(pk=assignment_id)
+                if asgn.is_randomized and asgn.question_count:
+                    import random
+                    pks = list(qs.values_list('pk', flat=True))
+                    selected = random.sample(pks, min(asgn.question_count, len(pks)))
+                    qs = qs.filter(pk__in=selected)
+            except Assignment.DoesNotExist:
+                pass
         return qs
 
 

@@ -63,6 +63,15 @@ class Assignment(models.Model):
     time_limit = models.IntegerField(blank=True, null=True, help_text='Daqiqalarda')
     attempts_allowed = models.IntegerField(default=1)
     order_index = models.IntegerField(default=0)
+    is_randomized = models.BooleanField(
+        default=False,
+        help_text="True bo'lsa savollar tasodifiy tartibda chiqariladi",
+    )
+    question_count = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Tasodifiy tanlanadigan savollar soni (is_randomized=True bo'lsa)",
+    )
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -131,6 +140,13 @@ class Question(models.Model):
     correct_answer = models.JSONField(blank=True, null=True, help_text="To'g'ri javob(lar). AI/teacher grader uchun null bo'lishi mumkin")
     points = models.IntegerField(default=1)
     order_index = models.IntegerField(default=0)
+    level = models.ForeignKey(
+        'accounts.Level',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='questions',
+    )
     explanation = models.TextField(blank=True, null=True, help_text='Javobdan keyin tushuntirish')
 
     class Meta:

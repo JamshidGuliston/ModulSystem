@@ -49,7 +49,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = [
             'id', 'assignment', 'part', 'question_text', 'question_data',
-            'correct_answer', 'points', 'order_index', 'explanation',
+            'correct_answer', 'points', 'order_index', 'explanation', 'level',
         ]
         read_only_fields = ['id']
 
@@ -74,7 +74,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'lesson', 'assignment_type',
             'title', 'description', 'total_points', 'time_limit',
-            'attempts_allowed', 'order_index', 'is_published',
+            'attempts_allowed', 'order_index', 'is_randomized', 'question_count', 'is_published',
             'questions_count', 'questions_max_score', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -103,7 +103,7 @@ class AssignmentDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'lesson', 'assignment_type',
             'title', 'description', 'total_points', 'time_limit',
-            'attempts_allowed', 'order_index', 'is_published',
+            'attempts_allowed', 'order_index', 'is_randomized', 'question_count', 'is_published',
             'parts', 'questions', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
