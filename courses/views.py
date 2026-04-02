@@ -81,6 +81,10 @@ class LessonViewSet(viewsets.ModelViewSet):
         if module_id:
             qs = qs.filter(module_id=module_id)
 
+        lesson_type = self.request.query_params.get('lesson_type')
+        if lesson_type:
+            qs = qs.filter(lesson_type=lesson_type)
+
         parent_id = self.request.query_params.get('parent_id')
         if parent_id:
             # Berilgan lesson ning child larini (stage larini) qaytaradi
