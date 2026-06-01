@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from accounts.models import Teacher, Level
-from .models import Module, Lesson, ContentType, LessonContent
+from .models import Module, Lesson, ContentType, LessonContent, ModuleType
 
 
 def make_teacher():
@@ -99,3 +99,21 @@ class LessonContentLevelTest(TestCase):
         resp = self.client.get(f'/api/lesson-contents/?lesson_id={self.lesson.id}')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.data), 2)
+
+
+class ModuleTypeModelTest(TestCase):
+    def setUp(self):
+        self.teacher = make_teacher()
+
+    def test_create_module_type(self):
+        mt = ModuleType.objects.create(
+            teacher=self.teacher, name='Grammatika', order_index=0
+        )
+        self.assertEqual(mt.name, 'Grammatika')
+        self.assertEqual(mt.teacher, self.teacher)
+
+    def test_module_type_unique_per_teacher(self):
+        from django.db import IntegrityError
+        ModuleType.objects.create(teacher=self.teacher, name='Grammatika')
+        with self.assertRaises(IntegrityError):
+            ModuleType.objects.create(teacher=self.teacher, name='Grammatika')

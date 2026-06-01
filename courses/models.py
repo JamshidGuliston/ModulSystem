@@ -17,6 +17,29 @@ class ContentType(models.Model):
         return self.name
 
 
+class ModuleType(models.Model):
+    """Modul turi: teacherga bog'langan, har teacher o'z turlarini yaratadi."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    teacher = models.ForeignKey(
+        'accounts.Teacher',
+        on_delete=models.CASCADE,
+        related_name='module_types',
+    )
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    order_index = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'module_type'
+        ordering = ['order_index']
+        unique_together = [('teacher', 'name')]
+
+    def __str__(self):
+        return self.name
+
+
 class Module(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     teacher = models.ForeignKey(
