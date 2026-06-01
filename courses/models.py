@@ -47,6 +47,18 @@ class Module(models.Model):
         on_delete=models.CASCADE,
         related_name='modules',
     )
+    module_type = models.ForeignKey(
+        'ModuleType',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='modules',
+    )
+    teachers = models.ManyToManyField(
+        'accounts.Teacher',
+        related_name='shared_modules',
+        blank=True,
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     thumbnail = models.CharField(max_length=500, blank=True, null=True)

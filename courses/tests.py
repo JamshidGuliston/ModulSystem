@@ -158,3 +158,29 @@ class ModuleTypeApiTest(TestCase):
         other_mt = ModuleType.objects.create(teacher=self.other, name='Theirs')
         resp = self.client.patch(f'/api/module-types/{other_mt.id}/', {'name': 'Hacked'})
         self.assertEqual(resp.status_code, 404)
+
+
+class ModuleFieldsTest(TestCase):
+    def setUp(self):
+        self.teacher = make_teacher()
+        self.mt = ModuleType.objects.create(teacher=self.teacher, name='Grammatika')
+
+    def test_module_type_optional(self):
+        module = Module.objects.create(
+            teacher=self.teacher, title='M', order_index=0
+        )
+        self.assertIsNone(module.module_type)
+
+    def test_module_type_assignment(self):
+        module = Module.objects.create(
+            teacher=self.teacher, title='M', order_index=0, module_type=self.mt
+        )
+        self.assertEqual(module.module_type, self.mt)
+
+    def test_module_teachers_m2m(self):
+        other = Teacher.objects.create(email='o2@test.com', password='p', full_name='O2')
+        module = Module.objects.create(
+            teacher=self.teacher, title='M', order_index=0
+        )
+        module.teachers.add(other)
+        self.assertIn(other, module.teachers.all())
