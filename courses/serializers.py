@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
-from .models import ContentType, Module, Lesson, ModuleContent, LessonContent
+from .models import ContentType, Module, Lesson, ModuleContent, LessonContent, ModuleType
 
 
 class ContentTypeSerializer(serializers.ModelSerializer):
@@ -8,6 +9,33 @@ class ContentTypeSerializer(serializers.ModelSerializer):
         model = ContentType
         fields = ['id', 'name', 'icon', 'description']
         read_only_fields = ['id']
+
+
+class ModuleTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ModuleType
+        fields = ['id', 'teacher', 'name', 'description', 'order_index', 'created_at']
+        read_only_fields = ['id', 'teacher', 'created_at']
+
+    def get_validators(self):
+        return [
+            v for v in super().get_validators()
+            if not isinstance(v, UniqueTogetherValidator)
+        ]
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if request and hasattr(request, 'teacher') and request.teacher:
+            teacher = request.teacher
+            name = attrs.get('name', getattr(self.instance, 'name', None))
+            qs = ModuleType.objects.filter(teacher=teacher, name=name)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    {'name': 'Bu modul turi nomi allaqachon mavjud.'}
+                )
+        return attrs
 
 
 class ModuleSerializer(serializers.ModelSerializer):

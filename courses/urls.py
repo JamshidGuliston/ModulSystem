@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     ContentTypeViewSet,
+    ModuleTypeViewSet,
     ModuleViewSet,
     LessonViewSet,
     ModuleContentViewSet,
@@ -12,6 +13,7 @@ from .views import (
 
 router = DefaultRouter()
 router.register(r'content-types', ContentTypeViewSet)
+router.register(r'module-types', ModuleTypeViewSet, basename='moduletype')
 router.register(r'modules', ModuleViewSet)
 router.register(r'lessons', LessonViewSet)
 router.register(r'module-contents', ModuleContentViewSet)

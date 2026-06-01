@@ -7,9 +7,10 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from .models import ContentType, Module, Lesson, ModuleContent, LessonContent
+from .models import ContentType, Module, Lesson, ModuleContent, LessonContent, ModuleType
 from .serializers import (
     ContentTypeSerializer,
+    ModuleTypeSerializer,
     ModuleSerializer,
     ModuleDetailSerializer,
     LessonSerializer,
@@ -43,6 +44,19 @@ def upload_file(request):
 class ContentTypeViewSet(viewsets.ModelViewSet):
     queryset = ContentType.objects.all()
     serializer_class = ContentTypeSerializer
+
+
+class ModuleTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = ModuleTypeSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        if hasattr(self.request, 'teacher') and self.request.teacher:
+            return ModuleType.objects.filter(teacher=self.request.teacher)
+        return ModuleType.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(teacher=self.request.teacher)
 
 
 class ModuleViewSet(viewsets.ModelViewSet):

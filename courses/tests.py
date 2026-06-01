@@ -118,3 +118,33 @@ class ModuleTypeModelTest(TestCase):
         ModuleType.objects.create(teacher=self.teacher, name='Grammatika')
         with self.assertRaises(IntegrityError):
             ModuleType.objects.create(teacher=self.teacher, name='Grammatika')
+
+
+class ModuleTypeApiTest(TestCase):
+    def setUp(self):
+        self.teacher = make_teacher()
+        self.other = Teacher.objects.create(
+            email='o@test.com', password='p', full_name='O'
+        )
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.teacher.api_token}')
+
+    def test_create_module_type(self):
+        resp = self.client.post('/api/module-types/', {'name': 'Grammatika', 'order_index': 0})
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.data['name'], 'Grammatika')
+        self.assertEqual(str(self.teacher.id), str(resp.data['teacher']))
+
+    def test_list_only_own_types(self):
+        ModuleType.objects.create(teacher=self.teacher, name='Mine')
+        ModuleType.objects.create(teacher=self.other, name='Theirs')
+        resp = self.client.get('/api/module-types/')
+        self.assertEqual(resp.status_code, 200)
+        names = [item['name'] for item in resp.data]
+        self.assertEqual(names, ['Mine'])
+
+    def test_duplicate_name_rejected(self):
+        ModuleType.objects.create(teacher=self.teacher, name='Grammatika')
+        resp = self.client.post('/api/module-types/', {'name': 'Grammatika'})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('name', resp.data)
