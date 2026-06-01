@@ -148,3 +148,13 @@ class ModuleTypeApiTest(TestCase):
         resp = self.client.post('/api/module-types/', {'name': 'Grammatika'})
         self.assertEqual(resp.status_code, 400)
         self.assertIn('name', resp.data)
+
+    def test_cannot_retrieve_other_teacher_type(self):
+        other_mt = ModuleType.objects.create(teacher=self.other, name='Theirs')
+        resp = self.client.get(f'/api/module-types/{other_mt.id}/')
+        self.assertEqual(resp.status_code, 404)
+
+    def test_cannot_update_other_teacher_type(self):
+        other_mt = ModuleType.objects.create(teacher=self.other, name='Theirs')
+        resp = self.client.patch(f'/api/module-types/{other_mt.id}/', {'name': 'Hacked'})
+        self.assertEqual(resp.status_code, 404)
