@@ -41,6 +41,8 @@ class ModuleType(models.Model):
 
 
 class Module(models.Model):
+    """Modul. `teacher` — egasi (scoping shu bo'yicha); `teachers` — ulashilgan
+    qo'shimcha teacherlar (faqat ma'lumot, scopingga ta'sir qilmaydi)."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     teacher = models.ForeignKey(
         'accounts.Teacher',

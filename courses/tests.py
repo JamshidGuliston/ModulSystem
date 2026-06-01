@@ -169,6 +169,7 @@ class ModuleFieldsTest(TestCase):
         module = Module.objects.create(
             teacher=self.teacher, title='M', order_index=0
         )
+        module.refresh_from_db()
         self.assertIsNone(module.module_type)
 
     def test_module_type_assignment(self):
@@ -184,3 +185,6 @@ class ModuleFieldsTest(TestCase):
         )
         module.teachers.add(other)
         self.assertIn(other, module.teachers.all())
+        # teachers M2M is informational: it must not affect the owner FK scoping
+        self.assertIn(module, self.teacher.modules.all())
+        self.assertNotIn(module, other.modules.all())
