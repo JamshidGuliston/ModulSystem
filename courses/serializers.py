@@ -40,16 +40,28 @@ class ModuleTypeSerializer(serializers.ModelSerializer):
 
 class ModuleSerializer(serializers.ModelSerializer):
     teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    module_type_name = serializers.CharField(source='module_type.name', read_only=True)
     lessons_count = serializers.IntegerField(source='lessons.count', read_only=True)
 
     class Meta:
         model = Module
         fields = [
-            'id', 'teacher', 'teacher_name', 'title', 'description',
+            'id', 'teacher', 'teacher_name', 'teachers',
+            'module_type', 'module_type_name', 'title', 'description',
             'thumbnail', 'order_index', 'is_sequential', 'is_published',
             'lessons_count', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        module_type = attrs.get('module_type')
+        if module_type and request and hasattr(request, 'teacher') and request.teacher:
+            if module_type.teacher_id != request.teacher.id:
+                raise serializers.ValidationError(
+                    {'module_type': 'Bu modul turi sizga tegishli emas.'}
+                )
+        return attrs
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -121,13 +133,15 @@ class LessonContentSerializer(serializers.ModelSerializer):
 class ModuleDetailSerializer(serializers.ModelSerializer):
     """Modul bilan birga darslar va kontentlarni qaytaradi"""
     teacher_name = serializers.CharField(source='teacher.full_name', read_only=True)
+    module_type_name = serializers.CharField(source='module_type.name', read_only=True)
     lessons = LessonSerializer(many=True, read_only=True)
     contents = ModuleContentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Module
         fields = [
-            'id', 'teacher', 'teacher_name', 'title', 'description',
+            'id', 'teacher', 'teacher_name', 'teachers',
+            'module_type', 'module_type_name', 'title', 'description',
             'thumbnail', 'order_index', 'is_sequential', 'is_published',
             'lessons', 'contents', 'created_at', 'updated_at',
         ]

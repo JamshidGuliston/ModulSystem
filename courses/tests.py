@@ -188,3 +188,47 @@ class ModuleFieldsTest(TestCase):
         # teachers M2M is informational: it must not affect the owner FK scoping
         self.assertIn(module, self.teacher.modules.all())
         self.assertNotIn(module, other.modules.all())
+
+
+class ModuleTypeOnModuleApiTest(TestCase):
+    def setUp(self):
+        self.teacher = make_teacher()
+        self.other = Teacher.objects.create(
+            email='o3@test.com', password='p', full_name='O3'
+        )
+        self.mt = ModuleType.objects.create(teacher=self.teacher, name='Grammatika')
+        self.other_mt = ModuleType.objects.create(teacher=self.other, name='Lugat')
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.teacher.api_token}')
+
+    def test_create_module_with_own_type(self):
+        resp = self.client.post('/api/modules/', {
+            'title': 'M', 'order_index': 0,
+            'teacher': str(self.teacher.id), 'module_type': str(self.mt.id),
+        })
+        self.assertEqual(resp.status_code, 201, resp.data)
+        self.assertEqual(str(self.mt.id), str(resp.data['module_type']))
+        self.assertEqual(resp.data['module_type_name'], 'Grammatika')
+
+    def test_create_module_with_foreign_type_rejected(self):
+        resp = self.client.post('/api/modules/', {
+            'title': 'M', 'order_index': 0,
+            'teacher': str(self.teacher.id), 'module_type': str(self.other_mt.id),
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('module_type', resp.data)
+
+    def test_create_module_without_type(self):
+        resp = self.client.post('/api/modules/', {
+            'title': 'M', 'order_index': 0, 'teacher': str(self.teacher.id),
+        })
+        self.assertEqual(resp.status_code, 201, resp.data)
+        self.assertIsNone(resp.data['module_type'])
+
+    def test_module_teachers_field_returned(self):
+        resp = self.client.post('/api/modules/', {
+            'title': 'M', 'order_index': 0,
+            'teacher': str(self.teacher.id), 'teachers': [str(self.other.id)],
+        })
+        self.assertEqual(resp.status_code, 201, resp.data)
+        self.assertIn(str(self.other.id), [str(t) for t in resp.data['teachers']])
