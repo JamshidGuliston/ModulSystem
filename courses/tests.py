@@ -225,6 +225,17 @@ class ModuleTypeOnModuleApiTest(TestCase):
         self.assertEqual(resp.status_code, 201, resp.data)
         self.assertIsNone(resp.data['module_type'])
 
+    def test_patch_module_with_foreign_type_rejected(self):
+        create_resp = self.client.post('/api/modules/', {
+            'title': 'M', 'order_index': 0, 'teacher': str(self.teacher.id),
+        })
+        module_id = create_resp.data['id']
+        resp = self.client.patch(
+            f'/api/modules/{module_id}/', {'module_type': str(self.other_mt.id)}
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('module_type', resp.data)
+
     def test_module_teachers_field_returned(self):
         resp = self.client.post('/api/modules/', {
             'title': 'M', 'order_index': 0,
