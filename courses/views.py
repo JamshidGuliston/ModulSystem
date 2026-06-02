@@ -60,7 +60,7 @@ class ModuleTypeViewSet(viewsets.ModelViewSet):
 
 
 class ModuleViewSet(viewsets.ModelViewSet):
-    queryset = Module.objects.select_related('teacher').prefetch_related('lessons').all()
+    queryset = Module.objects.select_related('teacher', 'module_type').prefetch_related('lessons', 'teachers').all()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
