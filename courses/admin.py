@@ -1,12 +1,21 @@
 from django.contrib import admin
 
-from .models import ContentType, Module, Lesson, ModuleContent, LessonContent
+from .models import ContentType, Module, Lesson, ModuleContent, LessonContent, ModuleType
 
 
 @admin.register(ContentType)
 class ContentTypeAdmin(admin.ModelAdmin):
     list_display = ['name', 'icon', 'description']
     search_fields = ['name']
+
+
+@admin.register(ModuleType)
+class ModuleTypeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'teacher', 'order_index', 'created_at']
+    list_filter = ['teacher']
+    search_fields = ['name']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+    list_select_related = ['teacher']
 
 
 class LessonInline(admin.TabularInline):
@@ -23,12 +32,13 @@ class ModuleContentInline(admin.TabularInline):
 
 @admin.register(Module)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display = ['title', 'teacher', 'order_index', 'is_sequential', 'is_published', 'created_at']
-    list_filter = ['is_published', 'is_sequential', 'teacher']
+    list_display = ['title', 'teacher', 'module_type', 'order_index', 'is_sequential', 'is_published', 'created_at']
+    list_filter = ['is_published', 'is_sequential', 'teacher', 'module_type']
     search_fields = ['title', 'description']
     readonly_fields = ['id', 'created_at', 'updated_at']
-    list_select_related = ['teacher']
+    list_select_related = ['teacher', 'module_type']
     list_editable = ['order_index', 'is_published']
+    filter_horizontal = ['teachers']
     inlines = [LessonInline, ModuleContentInline]
 
 
